@@ -1,0 +1,134 @@
+/* Reset and base setup */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f6f7fb;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Header */
+.topbar {
+  background-color: #fff;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.topbar h1 {
+  font-size: 1.4rem;
+  color: #624bff;
+  font-weight: 700;
+}
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
+}
+
+.card h2 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Patient info */
+#patientCard {
+  text-align: center;
+}
+
+#patientCard img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.75rem;
+}
+
+#patientCard p {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+/* Diagnostic Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+thead {
+  background: #f0f0f8;
+}
+
+th, td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+th {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Labs list */
+ul#labs {
+  list-style: none;
+  padding: 0;
+}
+
+ul#labs li {
+  padding: 0.6rem 0.4rem;
+  border-bottom: 1px solid #eee;
+  color: #555;
+}
+
+/* Vitals section */
+#vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#vitals div {
+  background: #f9f9ff;
+  padding: 0.8rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: #777;
+}
+.footer a {
+  color: #624bff;
+  text-decoration: none;
+}
