@@ -1,78 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Patient Dashboard - Jessica Taylor</title>
-
-  <!-- Link to your CSS file -->
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Chart.js (for the blood pressure graph) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
-
-  <!-- Your JavaScript file -->
   <script src="app.js" defer></script>
 </head>
 <body>
-
-  <!-- Header Section -->
-  <header class="topbar">
-    <h1>Patient Dashboard</h1>
-  </header>
-
-  <!-- Main Layout -->
+  <header class="topbar"><h1>Patient Dashboard</h1></header>
   <main class="layout">
-    <!-- LEFT SIDE -->
     <section class="content">
-      <!-- Diagnosis History -->
-      <article class="card">
-        <h2>Diagnosis History</h2>
-        <canvas id="bpChart"></canvas>
+      <article class="card"><h2>Diagnosis History</h2><canvas id="bpChart"></canvas>
         <div id="vitals"></div>
+        <table id="historyTable" style="width:100%;margin-top:8px"><thead><tr><th>Month</th><th>Systolic</th><th>Diastolic</th><th>HR</th><th>Temp</th><th>Resp</th></tr></thead><tbody></tbody></table>
       </article>
-
-      <!-- Diagnostic List -->
-      <article class="card">
-        <h2>Diagnostic List</h2>
-        <table id="diagnosticTable">
-          <thead>
-            <tr>
-              <th>Problem/Diagnosis</th>
-              <th>Description</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <article class="card"><h2>Diagnostic List</h2>
+        <table id="diagnosticTable"><thead><tr><th>Problem/Diagnosis</th><th>Description</th><th>Status</th></tr></thead><tbody></tbody></table>
       </article>
     </section>
-
-    <!-- RIGHT SIDE -->
     <aside class="sidebar">
-      <!-- Patient Info -->
       <article class="card" id="patientCard">
-        <img id="avatar" alt="Patient photo">
-        <h2 id="name">Jessica Taylor</h2>
-        <p id="dob"></p>
-        <p id="gender"></p>
-        <p id="phone"></p>
-        <p id="emergency"></p>
-        <p id="insurance"></p>
+        <div id="status" style="font-size:0.9rem;margin-bottom:8px;color:#333"></div>
+        <select id="patientSelect" style="display:none;margin-bottom:8px;width:100%"></select>
+        <img id="avatar" alt="Patient photo"><h2 id="name">Jessica Taylor</h2>
+        <p id="dob"></p><p id="gender"></p><p id="phone"></p><p id="emergency"></p><p id="insurance"></p>
       </article>
-
-      <!-- Lab Results -->
-      <article class="card">
-        <h2>Lab Results</h2>
-        <ul id="labs"></ul>
-      </article>
+      <article class="card"><h2>Lab Results</h2><ul id="labs"></ul></article>
     </aside>
   </main>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>Coalition Technologies – Skills Test</p>
-  </footer>
-
+  <footer class="footer"><p>Coalition Technologies – Skills Test</p></footer>
 </body>
 </html>

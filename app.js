@@ -1,128 +1,83 @@
-// API endpoint and authentication
+// API and auth
 const API_URL = "https://fedskillstest.coalitiontechnologies.workers.dev";
 const AUTH = "Basic " + btoa("coalition:skills-test");
 
-// Select the HTML elements we'll update
-const nameEl = document.getElementById("name");
-const dobEl = document.getElementById("dob");
-const genderEl = document.getElementById("gender");
-const phoneEl = document.getElementById("phone");
-const emergencyEl = document.getElementById("emergency");
-const insuranceEl = document.getElementById("insurance");
-const avatarEl = document.getElementById("avatar");
+const get = id => document.getElementById(id);
+let patients = [];
+const els = {
+  name: get("name"), dob: get("dob"), gender: get("gender"), phone: get("phone"),
+  emergency: get("emergency"), insurance: get("insurance"), avatar: get("avatar"),
+  vitals: get("vitals"), labs: get("labs"), bpChart: get("bpChart"),
+  status: get("status"), patientSelect: get("patientSelect")
+};
+const diagnosticTable = get("diagnosticTable").querySelector("tbody");
+const historyTableBody = get("historyTable").querySelector("tbody");
+let bpChartInstance = null;
 
-const vitalsEl = document.getElementById("vitals");
-const diagnosticTable = document.getElementById("diagnosticTable").querySelector("tbody");
-const labsEl = document.getElementById("labs");
+// Fetch patient data and render Jessica Taylor
+async function fetchPatientData(){
+  try{
+    const res = await fetch(API_URL,{headers:{Authorization: AUTH}});
+    const data = await res.json();
+    if(!Array.isArray(data)){els.status.textContent='Unexpected API response';console.error('Unexpected API response',data);return}
+    patients = data;
+    els.status.textContent = `fetched ${data.length} patients`;
 
-// Fetch patient data
-async function fetchPatientData() {
-  try {
-    const response = await fetch(API_URL, {
-      headers: {
-        "Authorization": AUTH,
-      },
-    });
+    els.patientSelect.innerHTML = data.map((d,i)=>`<option value="${i}">${(d.name||('Patient '+i))}</option>`).join('');
+    els.patientSelect.style.display = 'block';
+    els.patientSelect.onchange = ()=>displayPatientData(patients[+els.patientSelect.value]);
 
-    const data = await response.json();
+    const idx = data.findIndex(x=>x.name==="Jessica Taylor" || (x.name && x.name.toLowerCase().includes('jessica')));
+    if(idx>=0){els.patientSelect.value = idx; els.status.textContent += ` — matched ${data[idx].name}`; displayPatientData(data[idx])}
+    else{els.status.textContent += ' — Jessica not found; select a patient to preview'; console.warn('Jessica not found; available names:', data.map(d=>d.name).slice(0,20))}
+  }catch(e){console.error("Error fetching patient data:",e)}
+}
 
-    // Filter only Jessica Taylor
-    const patient = data.find(p => p.name === "Jessica Taylor");
-    if (patient) displayPatientData(patient);
-  } catch (error) {
-    console.error("Error fetching patient data:", error);
+function displayPatientData(p){
+  els.name.textContent = p.name;
+  els.dob.textContent = `DOB: ${p.date_of_birth}`;
+  els.gender.textContent = `Gender: ${p.gender}`;
+  els.phone.textContent = p.phone_number;
+  els.emergency.textContent = `Emergency Contact: ${p.emergency_contact}`;
+  els.insurance.textContent = `Insurance: ${p.insurance_type}`;
+  els.avatar.src = p.profile_picture;
+
+  if(els.status) els.status.textContent = `previewing: ${p.name}`;
+
+  if(p.vital_signs){
+    els.vitals.innerHTML = ["respiratory_rate","temperature","heart_rate"].map(k=>{
+      const v = p.vital_signs[k];
+      return v?`<div><strong>${k.split("_").map(s=>s[0].toUpperCase()+s.slice(1)).join(" ")}:</strong> ${v.value} ${v.unit||''}</div>`:''
+    }).join("");
+  }else els.vitals.innerHTML = '<em>No vitals available</em>';
+
+  if(Array.isArray(p.diagnostic_list) && p.diagnostic_list.length){
+    diagnosticTable.innerHTML = p.diagnostic_list.map(i=>`<tr><td>${i.name}</td><td>${i.description}</td><td>${i.status}</td></tr>`).join("");
+  }else diagnosticTable.innerHTML = '<tr><td colspan="3"><em>No diagnostics</em></td></tr>';
+
+  if(Array.isArray(p.lab_results) && p.lab_results.length){
+    els.labs.innerHTML = p.lab_results.map(l=>typeof l==='string'?`<li>${l}</li>`:`<li>${l.name} — ${l.date||''}</li>`).join("");
+  }else els.labs.innerHTML = '<li><em>No lab results</em></li>';
+
+  const history = Array.isArray(p.diagnosis_history)?p.diagnosis_history:[];
+  if(history.length){
+    historyTableBody.innerHTML = history.map(h=>`<tr><td>${h.month} ${h.year}</td><td>${h.blood_pressure?.systolic?.value??''}</td><td>${h.blood_pressure?.diastolic?.value??''}</td><td>${h.heart_rate?.value??''}</td><td>${h.temperature?.value??''}</td><td>${h.respiratory_rate?.value??''}</td></tr>`).join('');
+    renderBPChart(history);
+  }else{
+    historyTableBody.innerHTML = '<tr><td colspan="6"><em>No diagnosis history</em></td></tr>';
+    if(bpChartInstance){bpChartInstance.destroy(); bpChartInstance = null}
+    try{els.bpChart.getContext('2d').clearRect(0,0,els.bpChart.width,els.bpChart.height)}catch(e){}
   }
 }
 
-// Display data in the UI
-function displayPatientData(patient) {
-  // Basic info
-  nameEl.textContent = patient.name;
-  dobEl.textContent = `DOB: ${patient.date_of_birth}`;
-  genderEl.textContent = `Gender: ${patient.gender}`;
-  phoneEl.textContent = `Phone: ${patient.phone_number}`;
-  emergencyEl.textContent = `Emergency Contact: ${patient.emergency_contact}`;
-  insuranceEl.textContent = `Insurance: ${patient.insurance_type}`;
-  avatarEl.src = patient.profile_picture;
-
-  // Vitals
-  vitalsEl.innerHTML = `
-    <div>
-      <strong>Respiratory Rate:</strong> ${patient.vital_signs.respiratory_rate.value} ${patient.vital_signs.respiratory_rate.unit}
-    </div>
-    <div>
-      <strong>Temperature:</strong> ${patient.vital_signs.temperature.value} ${patient.vital_signs.temperature.unit}
-    </div>
-    <div>
-      <strong>Heart Rate:</strong> ${patient.vital_signs.heart_rate.value} ${patient.vital_signs.heart_rate.unit}
-    </div>
-  `;
-
-  // Diagnostic list
-  diagnosticTable.innerHTML = patient.diagnostic_list.map(item => `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.description}</td>
-      <td>${item.status}</td>
-    </tr>
-  `).join("");
-
-  // Labs
-  labsEl.innerHTML = patient.lab_results.map(lab => `
-    <li>${lab.name} — ${lab.date}</li>
-  `).join("");
-
-  // Blood pressure chart
-  renderBPChart(patient.diagnosis_history);
+function renderBPChart(history){
+  if(!history || !history.length) return;
+  if(bpChartInstance) bpChartInstance.destroy();
+  const ctx = els.bpChart.getContext("2d");
+  const labels = history.map(h=>`${h.month} ${h.year}`);
+  const systolic = history.map(h=>h.blood_pressure?.systolic?.value??null);
+  const diastolic = history.map(h=>h.blood_pressure?.diastolic?.value??null);
+  bpChartInstance = new Chart(ctx,{type:"line",data:{labels,datasets:[{label:"Systolic",data:systolic,borderColor:"#ff6384",fill:false,tension:0.3},{label:"Diastolic",data:diastolic,borderColor:"#36a2eb",fill:false,tension:0.3}]},options:{responsive:true,plugins:{legend:{position:"bottom"}},scales:{y:{title:{display:true,text:"mmHg"}}}}});
 }
 
-// Render blood pressure chart
-function renderBPChart(history) {
-  const ctx = document.getElementById("bpChart").getContext("2d");
-
-  const labels = history.map(h => `${h.month} ${h.year}`);
-  const systolic = history.map(h => h.blood_pressure.systolic.value);
-  const diastolic = history.map(h => h.blood_pressure.diastolic.value);
-
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Systolic",
-          data: systolic,
-          borderColor: "#ff6384",
-          fill: false,
-          tension: 0.3
-        },
-        {
-          label: "Diastolic",
-          data: diastolic,
-          borderColor: "#36a2eb",
-          fill: false,
-          tension: 0.3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "bottom"
-        }
-      },
-      scales: {
-        y: {
-          title: {
-            display: true,
-            text: "mmHg"
-          }
-        }
-      }
-    }
-  });
-}
-
-// Start the process
 fetchPatientData();
