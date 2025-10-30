@@ -14,8 +14,7 @@ const diagnosticTable = get("diagnosticTable").querySelector("tbody");
 const historyTableBody = get("historyTable").querySelector("tbody");
 let bpChartInstance = null;
 
-// Fetch patient data and render Jessica Taylor
-async function fetchPatientData(){
+async function fetchPatientData(){   // Fetch patient data and render Jessica Taylor if found
   try{
     const res = await fetch(API_URL,{headers:{Authorization: AUTH}});
     const data = await res.json();
